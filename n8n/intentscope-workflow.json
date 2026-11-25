@@ -1,0 +1,185 @@
+{
+  "name": "IntentScope Downstream Intent Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "intentscope-intent",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "IntentScope Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "intentscope-intent-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body ?? {};\nconst type = body.event_type;\nconst id = typeof body.event_id === 'string' ? body.event_id.trim() : '';\nconst invalid = message => [{json:{http_status:400, response:{ok:false,error:message}, manual_review:false}}];\nif (!id || !['prediction','summary_report','connectivity_test'].includes(type)) return invalid('Missing or unsupported event ID/type');\nif (type === 'connectivity_test') return [{json:{http_status:200,manual_review:false,response:{ok:true,event_id:id,event_type:type,route:'connectivity_test'}}}];\nif (type === 'summary_report') return [{json:{http_status:200,manual_review:false,response:{ok:true,event_id:id,event_type:type,route:'summary_report',total_predictions:body.total_predictions,manual_review_count:body.manual_review_count}}}];\nif (!Number.isInteger(body.predicted_class_id) || body.predicted_class_id < 0 || body.predicted_class_id > 55 || typeof body.model_probability !== 'number' || body.model_probability < 0 || body.model_probability > 1) return invalid('Invalid prediction metadata');\nconst flags = Array.isArray(body.triggered_workflows) ? body.triggered_workflows : [];\nconst review = (body.predicted_class_id === 55 && flags.includes('oos_routing')) || (body.is_low_confidence === true && flags.includes('low_confidence_review'));\nconst routes = flags.includes('intent_routing') && Array.isArray(body.matched_routes) ? body.matched_routes.filter(r=>typeof r==='string').slice(0,50) : [];\nreturn [{json:{http_status:200,manual_review:review,response:{ok:true,event_id:id,event_type:type,route:review?'manual_review':routes.length?'class_specific':'metadata',predicted_class_id:body.predicted_class_id,model_probability:body.model_probability,matched_routes:routes,metadata_logging_requested:flags.includes('prediction_logging'),manual_review_required:review}}}];"
+      },
+      "id": "classify-event",
+      "name": "Validate and Route Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "manual-review",
+              "leftValue": "={{ $json.manual_review }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "review-if",
+      "name": "Manual Review Required?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({json:{...item.json,response:{...item.json.response,review_status:\"flagged_for_review\"}}}));"
+      },
+      "id": "review-route",
+      "name": "Flag for Manual Review",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "normal-route",
+      "name": "Standard or Control Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response }}",
+        "options": {
+          "responseCode": "={{ $json.http_status }}"
+        }
+      },
+      "id": "respond",
+      "name": "Return Routing Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "IntentScope Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate and Route Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and Route Metadata": {
+      "main": [
+        [
+          {
+            "node": "Manual Review Required?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Review Required?": {
+      "main": [
+        [
+          {
+            "node": "Flag for Manual Review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Standard or Control Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flag for Manual Review": {
+      "main": [
+        [
+          {
+            "node": "Return Routing Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standard or Control Event": {
+      "main": [
+        [
+          {
+            "node": "Return Routing Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all"
+  },
+  "active": false,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

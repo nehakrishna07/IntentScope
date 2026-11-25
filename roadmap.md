@@ -1,0 +1,14 @@
+# IntentScope delivery
+- [x] Dashboard, playground, script comparison, batch upload, evaluation, architecture and documentation views
+- [x] Notebook-faithful deployable Python inference service and verification tests
+- [x] Reproduction, benchmark and deployment utilities; competition documentation
+- [x] Verify frontend and disconnected API flows
+- [x] Review newly supplied notebook, datasets and original reference; publish aggregate analysis only
+- [x] Prepare auditable reproduction comparison and checkpoint setup; update judging documents
+- [x] Verify dataset views, real-input CSV handling and disconnected API flows
+- [ ] Feature 1: Voice input and speech-to-text (Web Speech API, Hindi/English, Playground + Cross-Script + Demo Mode)
+- [ ] Feature 2: Enhanced Cross-Script Analysis (preset pairs, probability comparison chart, multi-pair consistency testing)
+- [ ] Feature 3: Explainable AI word-level occlusion sensitivity (`POST /api/explain` + interactive visualization)
+- [ ] Feature 4: Fullscreen Final Demo Mode with Launch Demo controls
+- [ ] Feature 5: n8n Automation Hub, backend webhook integration, importable workflow JSON, and updated docs
+- [ ] Real checkpoint inference and submission comparison — blocked by recreated checkpoint/tokenizer, not datasets or reference

@@ -1,0 +1,15 @@
+.git
+node_modules
+.output
+.tanstack
+.venv
+__pycache__
+notebooks
+src
+.env
+*.log
+data/private
+train.csv
+test.csv
+hingroberta_fold0_submission.csv
+hingroberta_fold0*.zip
