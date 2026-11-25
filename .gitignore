@@ -62,3 +62,7 @@ models/
 dist/
 .output/
 .vite/
+
+/test.csv
+/train.csv
+/regenerated_submission.csv
