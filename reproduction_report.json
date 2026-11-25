@@ -1,0 +1,29 @@
+{
+  "exact_match": true,
+  "reference_rows": 4912,
+  "candidate_rows": 4912,
+  "id_order_mismatches": 0,
+  "target_mismatches": 0,
+  "first_mismatch_index": null,
+  "candidate_ids_match_test": true,
+  "reference_ids_match_test": true,
+  "mode": "checkpoint_inference",
+  "model_info": {
+    "total_parameters": 278086712,
+    "trainable_parameters": 278086712,
+    "device": "cpu",
+    "hardware": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "checkpoint": "hingroberta_fold0_best",
+    "compliant": true,
+    "max_tokens": 64,
+    "class_count": 56,
+    "base_model": "l3cube-pune/hing-roberta-mixed",
+    "precision": "FP32 weights; FP16 CUDA autocast, as in notebook"
+  },
+  "sha256": {
+    "test": "77ec23781b77d99adf33b5e2fc4025f71fefe88ec36be0ae575bb113d43859fb",
+    "reference": "c018d0db1967b19e53f6258beccb91f3e3144b9fcb8e8a83e1de85018cc3c1c4",
+    "candidate": "cc7dbb8bf73583f48c946723a2a6505647a000ff54d9a492887145b2dc7cd557"
+  },
+  "passed": true
+}
